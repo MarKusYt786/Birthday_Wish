@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sender</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Fredoka+One&family=Montserrat:wght@500;600;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-1: #ffd6e0;
+        --bg-2: #ffdee9;
+        --accent-1: #ff4c84;
+        --accent-2: #b30047;
+        --accent-3: #6a1b9a;
+        --muted: #70123b;
+        --text-dark: #3b1027;
+      }
+
+      /* --- PAGE LAYOUT (no cutting outside screen) --- */
+      html,
+      body {
+        height: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center; /* center vertically */
+        align-items: center; /* center horizontally */
+        padding: 24px 16px;
+        font-family: "Montserrat", sans-serif;
+        background: linear-gradient(135deg, var(--bg-2), #b5fffc);
+        color: var(--text-dark);
+        position: relative;
+      }
+
+      .neon-bg {
+        position: fixed;
+        inset: -30%;
+        background: radial-gradient(
+            circle at 10% 10%,
+            rgba(255, 76, 132, 0.16),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 20%,
+            rgba(179, 0, 71, 0.12),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 50% 100%,
+            rgba(106, 27, 154, 0.09),
+            transparent 40%
+          );
+        filter: blur(10px);
+        opacity: 0.95;
+        animation: bgFloat 20s ease-in-out infinite alternate;
+        z-index: 0;
+        pointer-events: none;
+      }
+      @keyframes bgFloat {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(-3%, 2%) scale(1.04);
+        }
+        100% {
+          transform: translate(3%, -3%) scale(1.02);
+        }
+      }
+
+      .card-shell {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 560px; /* page never goes wider than this */
+        margin: 0 auto 3px;
+        padding: 2px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, #ff4dc4, #9b59b6, #ffb6c6);
+        box-shadow: 0 10px 36px rgba(179, 0, 71, 0.12);
+        animation: glowShell 4.8s ease-in-out infinite alternate;
+      }
+      @keyframes glowShell {
+        0% {
+          box-shadow: 0 8px 20px rgba(255, 76, 132, 0.12);
+        }
+        100% {
+          box-shadow: 0 20px 48px rgba(155, 89, 182, 0.18);
+        }
+      }
+
+      .card {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.98),
+          rgba(255, 249, 250, 0.96)
+        );
+        border-radius: 20px;
+        padding: 20px 18px 14px;
+        border: 1px solid rgba(179, 0, 71, 0.06);
+        position: relative;
+        overflow: hidden;
+        color: var(--text-dark);
+      }
+
+      .heading {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Fredoka One", cursive;
+        color: var(--accent-2);
+      }
+
+      .title .highlight {
+        background: linear-gradient(
+          90deg,
+          var(--accent-1),
+          var(--accent-2),
+          var(--accent-3)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+      }
+
+      .pulse-dot {
+        width: 10px;
+        height: 10px;
+        background: rgba(255, 76, 132, 0.95);
+        border-radius: 50%;
+        box-shadow: 0 6px 18px rgba(255, 76, 132, 0.18);
+        animation: pulse 1.8s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.7);
+          opacity: 0;
+        }
+      }
+
+      .description {
+        font-size: 13px;
+        color: var(--muted);
+        max-width: 420px;
+        margin: 8px auto 0;
+        line-height: 1.45;
+        font-family: "Playfair Display", serif;
+      }
+
+      .accent-word {
+        background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+        -webkit-background-clip: text;
+        color: transparent;
+        font-weight: 700;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      label {
+        font-size: 12px;
+        color: #7b3650;
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+        font-weight: 600;
+        align-items: center;
+      }
+
+      label .tag {
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(179, 0, 71, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--accent-2);
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(179, 0, 71, 0.06);
+        background: rgba(255, 255, 255, 0.98);
+        color: var(--text-dark);
+        padding: 10px 12px;
+        font-size: 13px;
+        outline: none;
+        transition: 160ms;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: var(--accent-1);
+        box-shadow: 0 8px 28px rgba(255, 76, 132, 0.08);
+        transform: translateY(-1px);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+        font-family: "Playfair Display", serif;
+      }
+
+      .file-input {
+        cursor: pointer;
+      }
+      .file-hint {
+        font-size: 12px;
+        color: #8d3b52;
+        margin-top: 6px;
+      }
+
+      .btn-row {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+      }
+
+      #generateBtn {
+        padding: 12px 20px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(45deg, #ff4dc4, #9b59b6);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        cursor: pointer;
+        font-family: "Fredoka One", cursive;
+        box-shadow: 0 12px 30px rgba(155, 89, 182, 0.12);
+        transition: transform 0.12s, box-shadow 0.12s;
+      }
+      #generateBtn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 42px rgba(155, 89, 182, 0.16);
+      }
+      #generateBtn:active {
+        transform: translateY(-1px) scale(0.99);
+      }
+
+      .status {
+        text-align: center;
+        font-size: 12px;
+        color: #8d3b52;
+        margin-top: 4px;
+        font-weight: 700;
+      }
+      .status.ok {
+        color: #0b5b33;
+      }
+      .status.error {
+        color: #7a1b1b;
+      }
+
+      .link-box {
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(179, 0, 71, 0.06);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.98),
+          rgba(255, 248, 249, 0.95)
+        );
+        font-size: 13px;
+        display: none;
+        text-align: center;
+      }
+
+      .copy-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        background: linear-gradient(45deg, #ff4dc4, #9b59b6);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(155, 89, 182, 0.16);
+        font-family: "Fredoka One", cursive;
+      }
+
+      .copy-icon {
+        font-size: 16px;
+      }
+
+      /* --- Neon toast popup AT TOP --- */
+      .toast {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-40px);
+        padding: 10px 18px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ff4dc4, #b30047);
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.35s ease;
+        box-shadow: 0 8px 25px rgba(255, 76, 132, 0.25);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      @media (max-width: 520px) {
+        .card {
+          padding: 18px 14px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="neon-bg"></div>
+
+    <div class="card-shell">
+      <div class="card">
+        <div class="heading">
+          <div class="title">
+            <span class="highlight">Birthday Wish</span>
+            <span>🎂</span>
+            <span class="pulse-dot"></span>
+          </div>
+
+          <p class="description">
+            Surprise your <span class="accent-word">friend</span>,
+            <span class="accent-word">family</span>, or
+            <span class="accent-word">partner</span> with your heartfelt wishes
+            in a new, creative, and unforgettable style.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="name"
+            >Birthday Person Name <span class="tag">To</span></label
+          >
+          <input
+            id="name"
+            type="text"
+            placeholder="e.g. Ananya, Bestie, My Love"
+          />
+        </div>
+
+        <div class="field">
+          <label for="message"
+            >Message <span class="tag">Main wish</span></label
+          >
+          <textarea
+            id="message"
+            placeholder="Write your birthday wish here..."
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="files"
+            >Attach Surprise Gift
+            <span class="tag">Images / Videos</span></label
+          >
+          <input
+            id="files"
+            class="file-input"
+            type="file"
+            accept="image/*,video/*"
+            multiple
+          />
+          <div class="file-hint">
+            Up to <strong>3 files</strong>, each ≈ <strong>400 KB</strong>,
+            total ≈ <strong>900 KB</strong> for best performance.
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="generateBtn">
+            <span class="icon">✨</span>
+            Generate link
+          </button>
+        </div>
+
+        <div class="status" id="status">No link generated yet.</div>
+
+        <div class="link-box" id="linkBox">
+          <button id="copyLinkBtn" class="copy-btn">
+            <span class="copy-icon">📋</span>
+            Copy link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Neon toast + sound -->
+    <div id="toast" class="toast">
+      <span id="toastText">Link is copied ✨</span>
+    </div>
+    <audio id="toastSound">
+      <source
+        src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_c15b03c940.mp3?filename=correct-2-46134.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+
+    <script>
+      const nameInput = document.getElementById("name");
+      const messageInput = document.getElementById("message");
+      const filesInput = document.getElementById("files");
+      const generateBtn = document.getElementById("generateBtn");
+      const statusEl = document.getElementById("status");
+      const linkBox = document.getElementById("linkBox");
+      const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+      const MAX_FILES = 3;
+      const MAX_MESSAGE_CHARS = 600;
+      const MAX_FILE_SIZE = 400 * 1024; // ~400 KB per file
+      const MAX_TOTAL_SIZE = 900 * 1024; // ~900 KB total
+
+      let lastGeneratedUrl = "";
+
+      function encode(obj) {
+        // plain URL-encoded JSON (no base64) to match receiver
+        return encodeURIComponent(JSON.stringify(obj));
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        const toastText = document.getElementById("toastText");
+        const sound = document.getElementById("toastSound");
+
+        toastText.textContent = msg;
+        toast.classList.add("show");
+
+        try {
+          sound.currentTime = 0;
+          sound.play();
+        } catch (e) {}
+
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 1500);
+      }
+
+      async function generate() {
+        const name = nameInput.value.trim();
+        const msg = messageInput.value.trim();
+        const files = Array.from(filesInput.files);
+
+        if (!name || !msg) {
+          statusEl.textContent = "Please fill the details.";
+          statusEl.className = "status error";
+          return;
+        }
+
+        if (msg.length > MAX_MESSAGE_CHARS) {
+          statusEl.textContent =
+            "Message too long. Limit " + MAX_MESSAGE_CHARS + " characters.";
+          statusEl.className = "status error";
+          return;
+        }
+
+        if (files.length > MAX_FILES) {
+          statusEl.textContent = "Attach max " + MAX_FILES + " files.";
+          statusEl.className = "status error";
+          return;
+        }
+
+        let totalSize = 0;
+        for (let f of files) {
+          totalSize += f.size;
+          if (f.size > MAX_FILE_SIZE) {
+            statusEl.textContent =
+              "Each file must be under ~400 KB. Please compress and retry.";
+            statusEl.className = "status error";
+            return;
+          }
+        }
+
+        if (totalSize > MAX_TOTAL_SIZE) {
+          statusEl.textContent =
+            "Total attachment size too large. Keep it under ~900 KB.";
+          statusEl.className = "status error";
+          return;
+        }
+
+        const fileData = [];
+        for (let f of files) {
+          const dataUrl = await new Promise((res) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(f);
+          });
+
+          fileData.push({ name: f.name, type: f.type, data: dataUrl });
+        }
+
+        const payload = {
+          name,
+          message: msg,
+          files: fileData,
+          createdAt: new Date().toISOString(),
+        };
+
+        const encoded = encode(payload);
+        const receiverUrl = new URL("receiver.html", window.location.href);
+        receiverUrl.hash = "data=" + encoded;
+        const url = receiverUrl.href;
+
+        lastGeneratedUrl = url;
+        linkBox.style.display = "block";
+
+        statusEl.textContent = "Link is generated.. Tap copy to share 👇.";
+        statusEl.className = "status ok";
+      }
+
+      async function copyLink() {
+        if (!lastGeneratedUrl) {
+          showToast("Generate a link first ✨");
+          return;
+        }
+
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(lastGeneratedUrl);
+          } else {
+            const tempInput = document.createElement("input");
+            tempInput.value = lastGeneratedUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+          }
+
+          showToast("Link is copied 😃");
+        } catch (err) {
+          console.error(err);
+          showToast("Copy failed — try manually");
+        }
+      }
+
+      generateBtn.onclick = generate;
+      copyLinkBtn.onclick = copyLink;
+    </script>
+  </body>
+</html>
